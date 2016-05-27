@@ -1,0 +1,23 @@
+{
+  "name": "audoku",
+  "version": "0.0.1",
+  "description": "Autodocumentate your rest apis on Express",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "documentation",
+    "rest",
+    "apis",
+    "api",
+    "validation",
+    "express"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mauromereu/audoku.git"
+  },
+  "author": "Mauro <mauro.mereu+npm@gmail.com>",
+  "license": "ISC"
+}
