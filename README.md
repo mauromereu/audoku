@@ -8,7 +8,7 @@ It follows in some way the unix man pages behaviour, showing how to use (basical
 
 ### Examples
 
-Writing the doc :
+Writing the doc by instantiating a middleware with a JSON like this on the endpoint you want to document:
 
 ```javascript
 var au = require('audoku');
@@ -45,7 +45,7 @@ router.get('/books', au.doku({
 };
 ```
 
-To get the help info just call the endpoint with audoku=help, say http://example.com/books?audoku=help and you'll get the following help:
+To get the help info just call the endpoint adding the field *audoku=help*, say http://example.com/books?audoku=help and you'll get the following help based upon your endpoint description:
 ```JSON
 {
 
@@ -89,8 +89,8 @@ To get the help info just call the endpoint with audoku=help, say http://example
 ```
 
 
-Audoku can also provide a way to check if your call to an endpoint is missing any field, parameter or header.
-To do so you have to set the audoku field to "report", as in this example http://example.com/books?myfield=200&price=3$&author=kafka&year=last&audoku=report
+Audoku can also provide a way to check if your call to an endpoint is missing any fields, parameters or headers.
+To do that you have to set the *audoku* field to "report", as in this example http://example.com/books?myfield=200&price=3$&author=kafka&year=last&audoku=report
 and you'll get the following JSON
 
 
