@@ -7,7 +7,12 @@ var au = {
 
         function audoku(config, req, res, next) {
 
+
+            debug('audoku*****************************************************');
+            debug(req);
+
             var params = req.params || {};
+            debug(params);
             var getReport = false;
 
             var getHelp = false;
@@ -15,10 +20,20 @@ var au = {
             var headers = req['headers'] || {};
 
             var fields = req.query || {};
+            var bodyFields = {};
+
+            try {
+                for (var i in req.body)
+                    bodyFields[i] = req.body[i];
+            }
+            catch (e){
+                throw Error("Body error");
+            }
 
             var cHeaders = config['headers'] || {};
             var cFields = config['fields'] || {};
             var cParams = config['params'] || {};
+            var cBodyFields = config['bodyFields'] || {};
 
             var label = 'audoku';
 
@@ -34,13 +49,20 @@ var au = {
             cHeaders[label] = pAudoku;
             cFields[label] = pAudoku;
             cParams[label] = pAudoku;
-
+            cBodyFields[label] = pAudoku;
             /*
              cHeaders[label]['alternatives'] = ['fields.' + label, 'params.' + label];
              cFields[label]['alternatives'] = ['headers.' + label, 'params.' + label];
              cParams[label]['alternatives'] = ['headers.' + label, 'fields.' + label];
 
              */
+
+            config.method = req.method;
+            config.url =req.baseUrl + req._parsedUrl.pathname;
+
+            for (var el in req.params ){
+                config.url = config.url.replace(req.params[el],":"+el);
+            }
 
             var inputs = {
                 'headers': {
@@ -54,9 +76,14 @@ var au = {
                 'fields': {
                     'conf': cFields,
                     'inputs': fields
+                },
+                'bodyFields':{
+                    'conf' : cBodyFields,
+                    'inputs' : bodyFields
                 }
             };
 
+            debug(inputs);
 
             for (var el in inputs) {
                 debug(el)
@@ -93,8 +120,11 @@ var au = {
             var report = {
                 'fullurl': req.protocol + '://' + req.get('host') + req.originalUrl
                 , 'url': req.originalUrl
+                , 'method' : req.method
                 , 'report':{
-                  inputs : {'headers': {}, 'fields': {}, 'params': {}}
+                  inputs : {
+                     'headers': {}, 'fields': {}, 'params': {}, 'bodyFields':{}
+                  }
                 }
             };
 
@@ -106,14 +136,16 @@ var au = {
                 var elputs = inputs[el].inputs;
                 var clabel = el;
                 var elreport = report.report.inputs[clabel];
-                warnings[el] = {};
-                errors[el] = {};
-                debug(warnings);
+
+
+
 
                 for (var i in conf) {
                     if (elputs && elputs.hasOwnProperty(i)) {
                         elreport[i] = au.checkValidity(conf[i], elputs[i]);  // keep results for  validity report
                         if (!elreport[i].type.correct  ){
+                            if (!errors.hasOwnProperty(el))
+                                errors[el] = {};
                             errors[el][i] = elreport[i];
                             errors[el][i].message = "Wrong type"
                             totErrors++;
@@ -123,7 +155,10 @@ var au = {
                         delete elputs[i];
                     }
                     else if (conf[i].required) {
-                        errors[el][i] = {'message': el.capitalizeFirstLetter() + ' not found'}
+                        if (!errors.hasOwnProperty(el))
+                            errors[el] = {};
+
+                        errors[el][i] = {'message': 'Required '+el.substr(0, el.length - 1) +  " '" +i+ "' not found"}
                         totErrors++
 
                         //TODO check for alternatives
@@ -132,10 +167,12 @@ var au = {
                 }
 
                 for (var i in elputs) {
+                    if (!warnings.hasOwnProperty(el))
+                        warnings[el] = {};
                     debug(el + " " + i);
                     debug(warnings);
                     warnings[el][i] = {
-                        'message': 'Found undocumented ' + el.substr(0, el.length - 1),
+                        'message': 'Found undocumented ' + el.substr(0, el.length - 1)+   ' \''+i+ '\'',
                         'value': elputs[i]
                     };
 
@@ -143,7 +180,16 @@ var au = {
                     totWarnings++;
                 }
 
+
+
                 report.report.inputs[clabel] = elreport;
+                debug("Exporting   ----------- report.report.inputs["+clabel+"]")
+                debug(report.report.inputs[clabel]);
+
+                if (myisEmpty(report.report.inputs[clabel])) {
+                    debug(true);
+                    delete report.report.inputs[clabel];
+                }
             }
 
 
@@ -168,7 +214,7 @@ var au = {
         var report = {};
 
 
-        report['type'] = au.checkType(rule.type, item);
+        report['type'] = this.checkType(rule.type, item);
         report['value'] = item;
         return report;
 
@@ -180,8 +226,8 @@ var au = {
             //try for int
             var a = new Date(item);
             var b = new Date('Invalid Date');
-            //   console.dir(a.toString());
-            //   console.dir(b.toString());
+            //   debug(a.toString());
+            //   debug(b.toString());
             if (a.toString() !== b.toString())
                 itemType = 'date';
             try {
@@ -193,9 +239,9 @@ var au = {
             }
             try {
                 var test = parseInt(item);
-                console.log(test);
-                console.log(test.toString());
-                console.log(item);
+                debug(test);
+                debug(test.toString());
+                debug(item);
                 if (test.toString() == item)
                     itemType = 'integer';
             } catch (e) {
@@ -218,11 +264,16 @@ var au = {
     }
 
 
-}
+};
 
 
 String.prototype.capitalizeFirstLetter = function () {
     return this.charAt(0).toUpperCase() + this.slice(1, this.length - 1);
-}
+};
+
+var myisEmpty = function(dict) {
+    for (var prop in dict) if (dict.hasOwnProperty(prop)) return false;
+    return true;
+};
 
 module.exports = au;
