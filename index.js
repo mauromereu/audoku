@@ -26,7 +26,7 @@ var au = {
                 for (var i in req.body)
                     bodyFields[i] = req.body[i];
             }
-            catch (e){
+            catch (e) {
                 throw Error("Body error");
             }
 
@@ -58,10 +58,10 @@ var au = {
              */
 
             config.method = req.method;
-            config.url =req.baseUrl + req._parsedUrl.pathname;
+            config.url = req.baseUrl + req._parsedUrl.pathname;
 
-            for (var el in req.params ){
-                config.url = config.url.replace(req.params[el],":"+el);
+            for (var el in req.params) {
+                config.url = config.url.replace(req.params[el], ":" + el);
             }
 
             var inputs = {
@@ -77,9 +77,9 @@ var au = {
                     'conf': cFields,
                     'inputs': fields
                 },
-                'bodyFields':{
-                    'conf' : cBodyFields,
-                    'inputs' : bodyFields
+                'bodyFields': {
+                    'conf': cBodyFields,
+                    'inputs': bodyFields
                 }
             };
 
@@ -92,12 +92,12 @@ var au = {
 
                 debug('-------------------------------------------');
                 debug(elputs);
-                if (elputs && elputs.hasOwnProperty(label)){
+                if (elputs && elputs.hasOwnProperty(label)) {
                     if (elputs && elputs.hasOwnProperty(label) && elputs[label] === 'help')
                         getHelp = true;
                     else if (elputs[label] === 'report')
                         getReport = true;
-                    else if ( !(config && config.hasOwnProperty('options') &&  config.options.hasOwnProperty('raiseOnError') && config.options['raiseOnError'])){
+                    else if (!(config && config.hasOwnProperty('options') && config.options.hasOwnProperty('raiseOnError') && config.options['raiseOnError'])) {
                         next();
                         return;
                     }
@@ -113,18 +113,17 @@ var au = {
             }
 
 
-
             //else go for validation
             debug('report');
 
             var report = {
                 'fullurl': req.protocol + '://' + req.get('host') + req.originalUrl
                 , 'url': req.originalUrl
-                , 'method' : req.method
-                , 'report':{
-                  inputs : {
-                     'headers': {}, 'fields': {}, 'params': {}, 'bodyFields':{}
-                  }
+                , 'method': req.method
+                , 'report': {
+                    inputs: {
+                        'headers': {}, 'fields': {}, 'params': {}, 'bodyFields': {}
+                    }
                 }
             };
 
@@ -138,12 +137,10 @@ var au = {
                 var elreport = report.report.inputs[clabel];
 
 
-
-
                 for (var i in conf) {
                     if (elputs && elputs.hasOwnProperty(i)) {
                         elreport[i] = au.checkValidity(conf[i], elputs[i]);  // keep results for  validity report
-                        if (!elreport[i].type.correct  ){
+                        if (!elreport[i].correct) {
                             if (!errors.hasOwnProperty(el))
                                 errors[el] = {};
                             errors[el][i] = elreport[i];
@@ -158,7 +155,7 @@ var au = {
                         if (!errors.hasOwnProperty(el))
                             errors[el] = {};
 
-                        errors[el][i] = {'message': 'Required '+el.substr(0, el.length - 1) +  " '" +i+ "' not found"}
+                        errors[el][i] = {'message': 'Required ' + el.substr(0, el.length - 1) + " '" + i + "' not found",'expectedType' : conf[i].type}
                         totErrors++
 
                         //TODO check for alternatives
@@ -172,7 +169,7 @@ var au = {
                     debug(el + " " + i);
                     debug(warnings);
                     warnings[el][i] = {
-                        'message': 'Found undocumented ' + el.substr(0, el.length - 1)+   ' \''+i+ '\'',
+                        'message': 'Found undocumented ' + el.substr(0, el.length - 1) + ' \'' + i + '\'',
                         'value': elputs[i]
                     };
 
@@ -181,9 +178,8 @@ var au = {
                 }
 
 
-
                 report.report.inputs[clabel] = elreport;
-                debug("Exporting   ----------- report.report.inputs["+clabel+"]")
+                debug("Exporting   ----------- report.report.inputs[" + clabel + "]")
                 debug(report.report.inputs[clabel]);
 
                 if (myisEmpty(report.report.inputs[clabel])) {
@@ -195,8 +191,8 @@ var au = {
 
             report.report.totErrors = totErrors;
             report.report.totWarnings = totWarnings;
-            if(totErrors>0) report.report.errors = errors;
-            if(totWarnings>0) report.report.warnings = warnings;
+            if (totErrors > 0) report.report.errors = errors;
+            if (totWarnings > 0) report.report.warnings = warnings;
 
             debug(config)
             if (config && config.hasOwnProperty('option') && config.options.hasOwnProperty('raiseOnError') && config.options['raiseOnError'] && totErrors > 0) {
@@ -213,8 +209,11 @@ var au = {
     checkValidity: function (rule, item) {
         var report = {};
 
+        var r = this.checkType(rule.type, item);
+        for (var attrname in r) {
+            report[attrname] = r[attrname];
+        }
 
-        report['type'] = this.checkType(rule.type, item);
         report['value'] = item;
         return report;
 
@@ -233,7 +232,7 @@ var au = {
             try {
                 var test = parseFloat(item);
 
-                if (test.toString() == item )
+                if (test.toString() == item)
                     itemType = 'float';
             } catch (e) {
             }
@@ -254,10 +253,10 @@ var au = {
 
         var type = {'type': itemType, 'expectedType': ruleType}
         if (itemType == ruleType) {
-          //  type['message'] = 'ok';
+            //  type['message'] = 'ok';
             type['correct'] = true;
         } else {
-           // type['message'] = 'Wrong type';
+            // type['message'] = 'Wrong type';
             type['correct'] = false;
         }
         return type;

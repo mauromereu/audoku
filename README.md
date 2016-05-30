@@ -103,19 +103,15 @@ and you'll get the following JSON
     "inputs": {
       "fields": {
         "author": {
-          "type": {
-            "type": "string",
-            "expectedType": "string",
-            "correct": true
-          },
+          "type": "string",
+          "expectedType": "string",
+          "correct": true,
           "value": "kafka"
         },
         "audoku": {
-          "type": {
-            "type": "string",
-            "expectedType": "string",
-            "correct": true
-          },
+          "type": "string",
+          "expectedType": "string",
+          "correct": true,
           "value": "report"
         }
       }
@@ -125,14 +121,13 @@ and you'll get the following JSON
     "errors": {
       "fields": {
         "genre": {
-          "message": "Required field 'genre' not found"
+          "message": "Required field 'genre' not found",
+          "expectedType": "string"
         },
         "year": {
-          "type": {
-            "type": "string",
-            "expectedType": "integer",
-            "correct": false
-          },
+          "type": "string",
+          "expectedType": "integer",
+          "correct": false,
           "value": "last",
           "message": "Wrong type"
         }
@@ -147,18 +142,6 @@ and you'll get the following JSON
         "connection": {
           "message": "Found undocumented header 'connection'",
           "value": "keep-alive"
-        },
-        "accept": {
-          "message": "Found undocumented header 'accept'",
-          "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
-        },
-        "accept-encoding": {
-          "message": "Found undocumented header 'accept-encoding'",
-          "value": "gzip, deflate, sdch"
-        },
-        "accept-language": {
-          "message": "Found undocumented header 'accept-language'",
-          "value": "it-IT,it;q=0.8,en-US;q=0.6,en;q=0.4"
         }
       },
       "fields": {
