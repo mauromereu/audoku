@@ -12,7 +12,8 @@
     "apis",
     "api",
     "validation",
-    "express"
+    "express",
+    "middleware"
   ],
   "repository": {
     "type": "git",

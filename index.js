@@ -60,6 +60,12 @@ var au = {
             config.method = req.method;
             config.url = req.baseUrl + req._parsedUrl.pathname;
 
+            if (!config.hasOwnProperty('options')){
+                config['options'] = {
+                    raiseOnError :false
+                }
+            }
+
             for (var el in req.params) {
                 config.url = config.url.replace(req.params[el], ":" + el);
             }
@@ -172,7 +178,6 @@ var au = {
                         'message': 'Found undocumented ' + el.substr(0, el.length - 1) + ' \'' + i + '\'',
                         'value': elputs[i]
                     };
-
 
                     totWarnings++;
                 }
