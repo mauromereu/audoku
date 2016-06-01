@@ -102,6 +102,9 @@ For example a body of this form:
 ```
 ##### options
 
+`raiseOnError` return http 400 with error information if errors are detected
+
+
 
 ### Examples
 

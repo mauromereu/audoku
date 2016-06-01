@@ -4,7 +4,7 @@
   "description": "Autodocumentate your rest apis on Express",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha test/test.js"
   },
   "keywords": [
     "documentation",
@@ -15,10 +15,17 @@
     "express",
     "middleware"
   ],
+  "devDependencies": {
+    "mocha": "latest",
+    "should" : "latest"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/mauromereu/audoku.git"
   },
   "author": "Mauro <mauro.mereu+npm@gmail.com>",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "should": "^9.0.0"
+  }
 }

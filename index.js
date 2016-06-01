@@ -3,12 +3,12 @@ var debug = require('debug')('audoku');
 
 
 var au = {
-    doku: function (config, req, res, next) {
+    doku: function (config) {
 
         function audoku(config, req, res, next) {
 
 
-            debug('audoku*****************************************************');
+            debug('audoku');
             debug(req);
 
             var params = req.params || {};
@@ -60,9 +60,9 @@ var au = {
             config.method = req.method;
             config.url = req.baseUrl + req._parsedUrl.pathname;
 
-            if (!config.hasOwnProperty('options')){
+            if (!config.hasOwnProperty('options')) {
                 config['options'] = {
-                    raiseOnError :false
+                    raiseOnError: false
                 }
             }
 
@@ -92,17 +92,19 @@ var au = {
             debug(inputs);
 
             for (var el in inputs) {
-                debug(el)
+                debug(el);
                 var conf = inputs[el].conf;
                 var elputs = inputs[el].inputs;
 
                 debug('-------------------------------------------');
                 debug(elputs);
                 if (elputs && elputs.hasOwnProperty(label)) {
-                    if (elputs && elputs.hasOwnProperty(label) && elputs[label] === 'help')
+                    if (elputs && elputs.hasOwnProperty(label) && elputs[label] === 'help') {
                         getHelp = true;
-                    else if (elputs[label] === 'report')
+                    }
+                    else if (elputs[label] === 'report') {
                         getReport = true;
+                    }
                     else if (!(config && config.hasOwnProperty('options') && config.options.hasOwnProperty('raiseOnError') && config.options['raiseOnError'])) {
                         next();
                         return;
@@ -161,7 +163,10 @@ var au = {
                         if (!errors.hasOwnProperty(el))
                             errors[el] = {};
 
-                        errors[el][i] = {'message': 'Required ' + el.substr(0, el.length - 1) + " '" + i + "' not found",'expectedType' : conf[i].type}
+                        errors[el][i] = {
+                            'message': 'Required ' + el.substr(0, el.length - 1) + " '" + i + "' not found",
+                            'expectedType': conf[i].type
+                        }
                         totErrors++
 
                         //TODO check for alternatives
@@ -224,46 +229,57 @@ var au = {
 
     },
     checkType: function (ruleType, item) {
+
+        debug("checkType(" + ruleType + "," + item + ")");
         var itemType = typeof item;
 
-        if (itemType == 'string') {
-            //try for int
+        if (itemType === 'string' || itemType === 'number') {
             var a = new Date(item);
             var b = new Date('Invalid Date');
-            //   debug(a.toString());
-            //   debug(b.toString());
-            if (a.toString() !== b.toString())
+
+            if (a.toString() !== b.toString()) {
                 itemType = 'date';
+                debug('date ok');
+            }
+
             try {
                 var test = parseFloat(item);
 
-                if (test.toString() == item)
+                if (test.toString() === item.toString()) {
                     itemType = 'float';
+                    debug('float ok');
+                }
+
             } catch (e) {
+                debug('catch of float');
             }
             try {
                 var test = parseInt(item);
-                debug(test);
-                debug(test.toString());
-                debug(item);
-                if (test.toString() == item)
+                debug("int " + test);
+                if (test.toString() === item.toString()) {
                     itemType = 'integer';
+                    debug('integer ok');
+                }
             } catch (e) {
+                debug('catch of integer');
             }
 
-            if (item == 'false' || item == 'true')
+            if (item === 'false' || item === 'true') {
                 itemType = 'boolean';
+                debug('boolean ok')
+            }
 
         }
 
-        var type = {'type': itemType, 'expectedType': ruleType}
-        if (itemType == ruleType) {
-            //  type['message'] = 'ok';
+        var type = {'type': itemType, 'expectedType': ruleType};
+        if (itemType === ruleType) {
+
             type['correct'] = true;
         } else {
             // type['message'] = 'Wrong type';
             type['correct'] = false;
         }
+        debug("type detected: " + itemType);
         return type;
     }
 
@@ -275,7 +291,7 @@ String.prototype.capitalizeFirstLetter = function () {
     return this.charAt(0).toUpperCase() + this.slice(1, this.length - 1);
 };
 
-var myisEmpty = function(dict) {
+var myisEmpty = function (dict) {
     for (var prop in dict) if (dict.hasOwnProperty(prop)) return false;
     return true;
 };
