@@ -1,6 +1,6 @@
 {
   "name": "audoku",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Autodocumentate your rest apis on Express",
   "main": "index.js",
   "scripts": {
@@ -17,7 +17,7 @@
   ],
   "devDependencies": {
     "mocha": "latest",
-    "should" : "latest"
+    "should": "latest"
   },
   "repository": {
     "type": "git",
