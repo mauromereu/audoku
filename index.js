@@ -5,7 +5,7 @@ var debug = require('debug')('audoku');
 var au = {
     doku: function (config) {
 
-        function audoku(config, req, res, next) {
+        return function(config, req, res, next) {
 
 
             debug('audoku');
@@ -34,7 +34,7 @@ var au = {
             var cFields = config['fields'] || {};
             var cParams = config['params'] || {};
             var cBodyFields = config['bodyFields'] || {};
-
+            var description = config['description'] || '';
             var label = 'audoku';
 
             var totErrors = 0, totWarnings = 0;
@@ -128,6 +128,7 @@ var au = {
                 'fullurl': req.protocol + '://' + req.get('host') + req.originalUrl
                 , 'url': req.originalUrl
                 , 'method': req.method
+                , 'description' : description
                 , 'report': {
                     inputs: {
                         'headers': {}, 'fields': {}, 'params': {}, 'bodyFields': {}
@@ -212,9 +213,8 @@ var au = {
 
             return res.send(report);
 
-        }
+        }.bind(null, config);
 
-        return audoku.bind(null, config);
     },
     checkValidity: function (rule, item) {
         var report = {};

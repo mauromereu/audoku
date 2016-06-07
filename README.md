@@ -48,6 +48,7 @@ The config argument should be a JSON dictionary containing any of the keys in th
 
 ```javascript
 {
+  'description' : 'This endpoint returns ...'
   'headers' : { ... },
   'fields' : { ... },
   'params' : { ... },
@@ -76,19 +77,19 @@ Each dictionary can contain several elements defined like the example:
 }
 ```
 
-##### headers
+##### headers (dictionary)
 A dictionary of elements passed as key-value headers in the request.
 
-##### fields
+##### fields (dictionary)
 The fields passed through the URL after the question mark, like
  ```http://example.com/endpoint?key1=value1&key2=value2&etc... ```
 
-##### params
+##### params (dictionary)
 The positional parameters in URLS, like:
 
 ```http://example.com/endpoint/:firstPar/someAction/:secondPar ```
 
-##### bodyFields
+##### bodyFields (dictionary)
 
 The fields passed as json dictionary in request body, by using all methods except GET.
 For example a body of this form:
@@ -100,11 +101,13 @@ For example a body of this form:
   ...
 }
 ```
-##### options
+##### options (dictionary)
 
 `raiseOnError` return http 400 with error information if errors are detected
 
+##### description (string)
 
+A text that describes the endpoint.
 
 ### Examples
 
