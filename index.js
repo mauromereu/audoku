@@ -120,6 +120,9 @@ var au = {
                 return res.send(help);
             }
 
+            if (!getReport) {
+                return next();
+            }
 
             //else go for validation
             debug('report');
@@ -243,7 +246,7 @@ var au = {
             }
 
             try {
-                var test = parseFloat(item);
+                var test = parseFloat(item, 10);
 
                 if (test.toString() === item.toString()) {
                     itemType = 'float';
