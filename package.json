@@ -13,7 +13,8 @@
     "api",
     "validation",
     "express",
-    "middleware"
+    "middleware",
+    "apidoc"
   ],
   "devDependencies": {
     "mocha": "latest",

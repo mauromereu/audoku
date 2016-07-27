@@ -53,7 +53,7 @@ var au = {
 
             cHeaders[label] = pAudoku;
             cFields[label] = pAudoku;
-          //  cParams[label] = pAudoku;
+            //  cParams[label] = pAudoku;
             cBodyFields[label] = pAudoku;
             /*
              cHeaders[label]['alternatives'] = ['fields.' + label, 'params.' + label];
@@ -328,7 +328,21 @@ var au = {
             });
         }
 
-        var filesLocation = path.join(__dirname, './template/');
+
+
+
+        var filesLocation = path.join(__dirname, '../apidoc/template/');
+
+
+        var fs = require('fs');
+
+        try {
+            fs.accessSync(filesLocation, fs.F_OK);
+
+        } catch (e) {
+            filesLocation = path.join(__dirname, './node_modules/apidoc/template/');
+        }
+
         async.eachSeries(calls, function (call, cb) {
             request(call, function (err, help) {
                 if (err) {
@@ -354,7 +368,7 @@ var au = {
              app.use('/audoku', r);
              */
             var api_project = config['metadata'];
-            var fs = require('fs');
+            //   var fs = require('fs');
 
 
             var apiprojectFile = path.join(filesLocation, '/api_project.js');
