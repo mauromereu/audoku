@@ -1,11 +1,16 @@
 "use strict";
 var debug = require('debug')('audoku');
+var express = require('express');
+var path = require('path');
+var request = require('request');
+var async = require('async');
 
+var _ = require('underscore')._;
 
 var au = {
     doku: function (config) {
 
-        return function(config, req, res, next) {
+        return function (config, req, res, next) {
 
 
             debug('audoku');
@@ -48,7 +53,7 @@ var au = {
 
             cHeaders[label] = pAudoku;
             cFields[label] = pAudoku;
-            cParams[label] = pAudoku;
+          //  cParams[label] = pAudoku;
             cBodyFields[label] = pAudoku;
             /*
              cHeaders[label]['alternatives'] = ['fields.' + label, 'params.' + label];
@@ -131,7 +136,7 @@ var au = {
                 'fullurl': req.protocol + '://' + req.get('host') + req.originalUrl
                 , 'url': req.originalUrl
                 , 'method': req.method
-                , 'description' : description
+                , 'description': description
                 , 'report': {
                     inputs: {
                         'headers': {}, 'fields': {}, 'params': {}, 'bodyFields': {}
@@ -196,7 +201,7 @@ var au = {
                 debug("Exporting   ----------- report.report.inputs[" + clabel + "]")
                 debug(report.report.inputs[clabel]);
 
-                if (myisEmpty(report.report.inputs[clabel])) {
+                if (_.isEmpty(report.report.inputs[clabel])) {
                     debug(true);
                     delete report.report.inputs[clabel];
                 }
@@ -284,19 +289,177 @@ var au = {
         }
         debug("type detected: " + itemType);
         return type;
-    }
+    },
+
+    apidocs: function (config) {
+
+        //console.log(config);
+        var routers = config['routers'];
+        var app = config['app'];
+
+        var apilist = [];
+        var calls = [];
+        //console.log(routers.length);
+        for (var i = 0; i < routers.length; ++i) {
+            var r = routers[i].router;
+            var basepath = routers[i].basepath;
+
+            var mystack = r.stack;
+            if (!mystack) {
+                mystack = r._router.stack;
+            }
+            _.each(mystack, function (stack) {
+                if (stack.route) {
+
+                    var route = stack.route,
+                        methodsDone = {};
+                    _.each(route.stack, function (r) {
+                        var method = r.method ? r.method.toUpperCase() : null;
+                        if (!methodsDone[method] && method) {
+                            //apilist.push({method:method, url : basepath+route.path, help:help});
+                            debug('[' + method + '] ' + basepath + route.path);
+
+                            methodsDone[method] = true;
+                            calls.push({method: method, url: basepath + route.path, headers: {audoku: 'help'}});
+
+                        }
+                    });
+                }
+            });
+        }
+
+        var filesLocation = path.join(__dirname, './template/');
+        async.eachSeries(calls, function (call, cb) {
+            request(call, function (err, help) {
+                if (err) {
+                    debug(err);
+                    cb(err);
+                }
+                else {
+                    apilist.push(JSON.parse(help.body));
+                    cb(null);
+                }
+            });
+
+        }, function done() {
 
 
-};
+            //  console.log(apilist);
+            /*
+             var r = express();
 
+             r.get('',function(req, res){
+             res.send(apilist);
+             });
+             app.use('/audoku', r);
+             */
+            var api_project = config['metadata'];
+            var fs = require('fs');
+
+
+            var apiprojectFile = path.join(filesLocation, '/api_project.js');
+            fs.writeFile(apiprojectFile, 'define(' + JSON.stringify(api_project) + ');', function (err) {
+                if (err) {
+                    return console.log(err);
+                }
+                debug("written " + apiprojectFile);
+            });
+            var api_data = {'api': []};
+
+            _.each(apilist, function (el) {
+                //console.log(el);
+                var newEl = {};
+                _.extend(newEl, el);
+                newEl['type'] = el['method'];
+                newEl['parameter'] = {};
+                newEl['groupTitle'] = el['group'];
+
+                var parArray = ['fields','bodyFields'];
+
+                for (var i = 0; i < parArray.length; ++i) {
+                    var key = parArray[i];
+
+                    for (var p in el[key]) {
+                        if (!newEl['parameter'].hasOwnProperty('fields'))
+                            newEl['parameter']['fields'] = {};
+                        if (!newEl['parameter']['fields'].hasOwnProperty(key.capitalizeFirstLetter()))
+                            newEl['parameter']['fields'][key.capitalizeFirstLetter()] = [];
+                        newEl['parameter']['fields'][key.capitalizeFirstLetter()].push(
+                            {
+                                group: key.capitalizeFirstLetter(),
+                                type: el[key][p].type.capitalizeFirstLetter(),
+                                optional: !( el[key][p].required || false ),
+                                field: p,
+                                description: el[key][p].description
+
+                            }
+                        )
+                    }
+                }
+
+                var key = 'params';
+                for (var p in el[key]) {
+                    if (!newEl['parameter'].hasOwnProperty('fields'))
+                        newEl['parameter']['fields'] = {};
+                    if (!newEl['parameter']['fields'].hasOwnProperty('Parameters'))
+                        newEl['parameter']['fields']['Parameters'] = [];
+                    newEl['parameter']['fields']['Parameters'].push(
+                        {
+                            group: 'Parameters',
+                            type: el[key][p].type.capitalizeFirstLetter(),
+                            optional: !( el[key][p].required || false ),
+                            field: p,
+                            description: el[key][p].description
+
+                        }
+                    )
+                }
+                delete newEl[key];
+                delete newEl[key];
+
+
+                for (var p in el['headers']) {
+                    if (!newEl.hasOwnProperty('header'))
+                        newEl['header'] = {};
+                    if (!newEl['header'].hasOwnProperty('fields'))
+                        newEl['header']['fields'] = {};
+                    if (!newEl['header']['fields'].hasOwnProperty('Headers'))
+                        newEl['header']['fields']['Headers'] = [];
+                    newEl['header']['fields']['Headers'].push(
+                        {
+                            group: 'Headers',
+                            type: el['headers'][p].type.capitalizeFirstLetter(),
+                            optional: !( el['headers'][p].required || false ),
+                            field: p,
+                            description: el['headers'][p].description
+
+                        }
+                    )
+
+                }
+
+                api_data.api.push(newEl);
+            });
+
+
+            var apidataFile = path.join(filesLocation, '/api_data.js');
+            fs.writeFile(apidataFile, 'define(' + JSON.stringify(api_data) + ');', function (err) {
+                if (err) {
+                    return console.log(err);
+                }
+                debug("written " + apidataFile);
+            });
+
+
+        });
+        app.use('/docs', express.static(filesLocation));
+    } // end apidocs
+
+}; // end au
 
 String.prototype.capitalizeFirstLetter = function () {
-    return this.charAt(0).toUpperCase() + this.slice(1, this.length - 1);
-};
+    return this.charAt(0).toUpperCase() + this.slice(1);
+}
 
-var myisEmpty = function (dict) {
-    for (var prop in dict) if (dict.hasOwnProperty(prop)) return false;
-    return true;
-};
 
 module.exports = au;

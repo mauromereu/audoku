@@ -26,6 +26,10 @@
   "author": "Mauro <mauro.mereu+npm@gmail.com>",
   "license": "ISC",
   "dependencies": {
-    "should": "^9.0.0"
+    "apidoc": "^0.16.1",
+    "express": "^4.14.0",
+    "request": "^2.74.0",
+    "should": "^9.0.0",
+    "underscore": "^1.8.3"
   }
 }
