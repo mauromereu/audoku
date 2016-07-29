@@ -54,7 +54,8 @@ var au = {
             cHeaders[label] = pAudoku;
             cFields[label] = pAudoku;
             //  cParams[label] = pAudoku;
-            cBodyFields[label] = pAudoku;
+            //cBodyFields[label] = pAudoku;
+
             /*
              cHeaders[label]['alternatives'] = ['fields.' + label, 'params.' + label];
              cFields[label]['alternatives'] = ['headers.' + label, 'params.' + label];
@@ -410,6 +411,28 @@ var au = {
                         )
                     }
                 }
+                /*
+                var parArray = ['fields','bodyFields'];
+                for (var i = 0; i < parArray.length; ++i) {
+                    var key = parArray[i];
+                    var exKey = key+"Examples";
+
+                    for (var p in el[exKey]) {
+                        if (!newEl['parameter'].hasOwnProperty('examples'))
+                            newEl['parameter']['examples'] = {};
+                        if (!newEl['parameter']['examples'].hasOwnProperty(key.capitalizeFirstLetter()))
+                            newEl['parameter']['examples'][key.capitalizeFirstLetter()] = [];
+                        newEl['parameter']['examples'][key.capitalizeFirstLetter()].push(
+                            {
+                                title: el[exKey].capitalizeFirstLetter(),
+                                type: el[exKey][p].type.capitalizeFirstLetter(),
+                                content: el[key][p].description
+
+                            }
+                        )
+                    }
+                } */
+
 
                 var key = 'params';
                 for (var p in el[key]) {
@@ -466,7 +489,7 @@ var au = {
 
 
         });
-        app.use('/docs', express.static(filesLocation));
+        app.use(config['docspath'], express.static(filesLocation));
     } // end apidocs
 
 }; // end au

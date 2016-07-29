@@ -2,15 +2,24 @@
 
 Audoku is an Express *middleware* for **documenting** and **validating/reporting** Rest API endpoints.
 It allows you to get the documentation of your APIs in **Json format** by calling single endpoints.
-Audoku differs from other projects about API documentation, because *it provides just the information*, no graphical view.
 It follows in some way the *unix man pages behaviour*, showing how to use (basically which parameters and headers set for) your endpoints, by calling them with a special parameter.
 
+From the v0.1.0 Audoku can also generate and serve the api documentation in web pages format using [apidoc](http://apidocjs.com/), just writing json instead of writing with the apidoc syntax.
 
-## Installation
+
+ * [Installation](#installation)
+ * [Using Audoku](#using)
+   * [function doku(config)](#doku)
+ * [Serving documentation through Apidoc](#functions)
+   * [function apidocs(config)](#apidocs)
+
+## <a name="installation"></a>Installation
 To use **audoku** install it in your Express project by typing:
 
 `npm install audoku`
 
+
+## <a name="using"></a>Using Audoku
 
 ### Include Audoku
 
@@ -22,11 +31,11 @@ var au = require('audoku');
 
 ### Using Audoku
 
-Audoku is a single method package that provides a middleware for Express.
+Audoku provides a middleware for Express to describe your endpoint parameters and info.
 
 Here the function documentation:
 
-### `function doku(config)`
+### <a name="doku"></a>`function doku(config)`
 Builds a function to be used as middleware for single endpoint.
 Like this:
 
@@ -267,6 +276,43 @@ and you'll get the following JSON:
 }
 ```
 
+### <a name="apidocs"></a>`function apidocs(config)`
+
+The apidocs function generate the [apidoc](http://apidocjs.com/) struct for your documentation and serves it with your app web server.
+
+
+The config should have the fields like the following example:
+
+
+```
+var config = {
+    metadata: {
+            "name": "Api Project",
+            "version": "1.0.0",
+            "title": "REst web API",
+            "url": "https://api.example.com",
+            "header": {
+                "title": "API Overview",
+                "content": "<p>A wonderful set of APIs</p>"
+            },
+            "footer": {
+                "title": "Maintained by ACME",
+                "content": "<p>Codebase maintained by ACME</p>\n"
+            }
+        },
+    app: app, // the espress main app
+    docspath : '/docs',
+    routers: [{
+        basepath: "http://localhost:3000/api/v1/books" ,
+        router: books // the router passed to "app.use('/api/v1/books', books); "
+    },
+    {
+        basepath: "http://localhost:3000/api/v1/authors" ,
+        router: authors // the router passed to "app.use('/api/v1/authors', authors); "
+    }]
+
+}
+```
 
 # Author
 
