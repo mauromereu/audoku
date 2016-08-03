@@ -1,3 +1,5 @@
+/* jshint -W069 */
+
 require('should');
 var au = require('../index');
 

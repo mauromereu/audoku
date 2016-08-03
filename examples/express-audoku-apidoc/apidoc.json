@@ -1,0 +1,6 @@
+{
+  "name": "Example API Documentation with audoku and apidoc",
+  "version": "0.3.0",
+   "description": "Api Node/Express documented with audoku and apidoc",
+  "title": "Example API"
+}

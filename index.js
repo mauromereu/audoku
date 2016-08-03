@@ -1,4 +1,5 @@
-"use strict";
+/* jshint -W069 */
+
 var debug = require('debug')('audoku');
 var express = require('express');
 var path = require('path');
@@ -9,7 +10,7 @@ var _ = require('underscore')._;
 
 var au = {
     doku: function (config) {
-
+        "use strict";
         return function (config, req, res, next) {
 
 
@@ -27,8 +28,9 @@ var au = {
             var fields = req.query || {};
             var bodyFields = {};
 
+            var i;
             try {
-                for (var i in req.body)
+                for (i in req.body)
                     bodyFields[i] = req.body[i];
             }
             catch (e) {
@@ -69,11 +71,11 @@ var au = {
             if (!config.hasOwnProperty('options')) {
                 config['options'] = {
                     raiseOnError: false
-                }
+                };
             }
 
-            for (var el in req.params) {
-                config.url = config.url.replace(req.params[el], ":" + el);
+            for (var e in req.params) {
+                config.url = config.url.replace(req.params[e], ":" + e);
             }
 
             var inputs = {
@@ -96,11 +98,13 @@ var au = {
             };
 
             debug(inputs);
-
-            for (var el in inputs) {
+            var conf;
+            var elputs;
+            var el;
+            for (el in inputs) {
                 debug(el);
-                var conf = inputs[el].conf;
-                var elputs = inputs[el].inputs;
+                conf = inputs[el].conf;
+                elputs = inputs[el].inputs;
 
                 debug('-------------------------------------------');
                 debug(elputs);
@@ -134,35 +138,33 @@ var au = {
             debug('report');
 
             var report = {
-                'fullurl': req.protocol + '://' + req.get('host') + req.originalUrl
-                , 'url': req.originalUrl
-                , 'method': req.method
-                , 'description': description
-                , 'report': {
+                'fullurl': req.protocol + '://' + req.get('host') + req.originalUrl,
+                'url': req.originalUrl,
+                'method': req.method,
+                'description': description,
+                'report': {
                     inputs: {
                         'headers': {}, 'fields': {}, 'params': {}, 'bodyFields': {}
                     }
                 }
             };
 
-            debug(report.report)
+            debug(report.report);
 
-
-            for (var el in inputs) {
-                var conf = inputs[el].conf;
-                var elputs = inputs[el].inputs;
+            for (el in inputs) {
+                conf = inputs[el].conf;
+                elputs = inputs[el].inputs;
                 var clabel = el;
                 var elreport = report.report.inputs[clabel];
 
-
-                for (var i in conf) {
+                for (i in conf) {
                     if (elputs && elputs.hasOwnProperty(i)) {
                         elreport[i] = au.checkValidity(conf[i], elputs[i]);  // keep results for  validity report
                         if (!elreport[i].correct) {
                             if (!errors.hasOwnProperty(el))
                                 errors[el] = {};
                             errors[el][i] = elreport[i];
-                            errors[el][i].message = "Wrong type"
+                            errors[el][i].message = "Wrong type";
                             totErrors++;
                             delete elreport[i];
                         }
@@ -176,15 +178,15 @@ var au = {
                         errors[el][i] = {
                             'message': 'Required ' + el.substr(0, el.length - 1) + " '" + i + "' not found",
                             'expectedType': conf[i].type
-                        }
-                        totErrors++
+                        };
+                        totErrors++;
 
                         //TODO check for alternatives
 
                     }
                 }
 
-                for (var i in elputs) {
+                for (i in elputs) {
                     if (!warnings.hasOwnProperty(el))
                         warnings[el] = {};
                     debug(el + " " + i);
@@ -199,7 +201,7 @@ var au = {
 
 
                 report.report.inputs[clabel] = elreport;
-                debug("Exporting   ----------- report.report.inputs[" + clabel + "]")
+                debug("Exporting   ----------- report.report.inputs[" + clabel + "]");
                 debug(report.report.inputs[clabel]);
 
                 if (_.isEmpty(report.report.inputs[clabel])) {
@@ -214,7 +216,7 @@ var au = {
             if (totErrors > 0) report.report.errors = errors;
             if (totWarnings > 0) report.report.warnings = warnings;
 
-            debug(config)
+            debug(config);
             if (config && config.hasOwnProperty('option') && config.options.hasOwnProperty('raiseOnError') && config.options['raiseOnError'] && totErrors > 0) {
 
                 return res.status(400).send(errors);
@@ -226,6 +228,7 @@ var au = {
 
     },
     checkValidity: function (rule, item) {
+        "use strict";
         var report = {};
 
         var r = this.checkType(rule.type, item);
@@ -238,6 +241,7 @@ var au = {
 
     },
     checkType: function (ruleType, item) {
+        "use strict";
 
         debug("checkType(" + ruleType + "," + item + ")");
         var itemType = typeof item;
@@ -250,9 +254,9 @@ var au = {
                 itemType = 'date';
                 debug('date ok');
             }
-
+            var test;
             try {
-                var test = parseFloat(item, 10);
+                test = parseFloat(item);
 
                 if (test.toString() === item.toString()) {
                     itemType = 'float';
@@ -263,7 +267,7 @@ var au = {
                 debug('catch of float');
             }
             try {
-                var test = parseInt(item);
+                test = parseInt(item);
                 debug("int " + test);
                 if (test.toString() === item.toString()) {
                     itemType = 'integer';
@@ -275,7 +279,7 @@ var au = {
 
             if (item === 'false' || item === 'true') {
                 itemType = 'boolean';
-                debug('boolean ok')
+                debug('boolean ok');
             }
 
         }
@@ -283,23 +287,56 @@ var au = {
         var type = {'type': itemType, 'expectedType': ruleType};
         if (itemType === ruleType) {
 
-            type['correct'] = true;
+            type.correct = true;
         } else {
             // type['message'] = 'Wrong type';
-            type['correct'] = false;
+            type.correct = false;
         }
         debug("type detected: " + itemType);
         return type;
     },
 
-    apidocs: function (config) {
+    /**
+     * Generate the apidoc html for
+     *
+     * @param config
+     * @param callback
+     */
+    apidocs: function (config, callback) {
+        "use strict";
 
         //console.log(config);
         var routers = config['routers'];
-        var app = config['app'];
+
+        if (!routers) {
+
+            debug('No routers in config');
+            throw  Error('No routers in config');
+        }
+
+        var app = config.app;
 
         var apilist = [];
         var calls = [];
+
+        var workWithStack = function (stack) {
+            if (stack.route) {
+
+                var route = stack.route,
+                    methodsDone = {};
+                _.each(route.stack, function (r) {
+                    var method = r.method ? r.method.toUpperCase() : null;
+                    if (!methodsDone[method] && method) {
+                        //apilist.push({method:method, url : basepath+route.path, help:help});
+                        debug('[' + method + '] ' + basepath + route.path);
+
+                        methodsDone[method] = true;
+                        calls.push({method: method, url: basepath + route.path, headers: {audoku: 'help'}});
+
+                    }
+                });
+            }
+        };
         //console.log(routers.length);
         for (var i = 0; i < routers.length; ++i) {
             var r = routers[i].router;
@@ -309,27 +346,8 @@ var au = {
             if (!mystack) {
                 mystack = r._router.stack;
             }
-            _.each(mystack, function (stack) {
-                if (stack.route) {
-
-                    var route = stack.route,
-                        methodsDone = {};
-                    _.each(route.stack, function (r) {
-                        var method = r.method ? r.method.toUpperCase() : null;
-                        if (!methodsDone[method] && method) {
-                            //apilist.push({method:method, url : basepath+route.path, help:help});
-                            debug('[' + method + '] ' + basepath + route.path);
-
-                            methodsDone[method] = true;
-                            calls.push({method: method, url: basepath + route.path, headers: {audoku: 'help'}});
-
-                        }
-                    });
-                }
-            });
+            _.each(mystack, workWithStack);
         }
-
-
 
 
         var filesLocation = path.join(__dirname, '../apidoc/template/');
@@ -344,6 +362,18 @@ var au = {
             filesLocation = path.join(__dirname, './node_modules/apidoc/template/');
         }
 
+        try {
+            fs.accessSync(filesLocation, fs.F_OK);
+
+        } catch (e) {
+            debug(e);
+            if (callback instanceof Function) {
+                callback(e);
+            }
+
+            return;
+        }
+
         async.eachSeries(calls, function (call, cb) {
             request(call, function (err, help) {
                 if (err) {
@@ -351,13 +381,24 @@ var au = {
                     cb(err);
                 }
                 else {
-                    apilist.push(JSON.parse(help.body));
-                    cb(null);
+                    debug(help.body);
+                    try {
+                        apilist.push(JSON.parse(help.body));
+                        debug('Collected documentation for call ' + call.url);
+                        cb(null);
+                    } catch (e) {
+                        debug(e);
+                    }
                 }
             });
 
-        }, function done() {
+        }, function done(err) {
 
+
+            if (err) {
+                callback(err);
+                return;
+            }
 
             //  console.log(apilist);
             /*
@@ -375,120 +416,160 @@ var au = {
             var apiprojectFile = path.join(filesLocation, '/api_project.js');
             fs.writeFile(apiprojectFile, 'define(' + JSON.stringify(api_project) + ');', function (err) {
                 if (err) {
-                    return console.log(err);
+                    if (callback instanceof Function) callback(err);
+                    return;
                 }
                 debug("written " + apiprojectFile);
             });
             var api_data = {'api': []};
+            var p;
 
             _.each(apilist, function (el) {
-                //console.log(el);
-                var newEl = {};
-                _.extend(newEl, el);
-                newEl['type'] = el['method'];
-                newEl['parameter'] = {};
-                newEl['groupTitle'] = el['group'];
+                    //console.log(el);
+                    var newEl = {};
+                    _.extend(newEl, el);
+                    newEl['type'] = el['method'];
+                    newEl['parameter'] = {};
+                    newEl['groupTitle'] = el['group'];
 
-                var parArray = ['fields','bodyFields'];
-
-                for (var i = 0; i < parArray.length; ++i) {
-                    var key = parArray[i];
-
-                    for (var p in el[key]) {
-                        if (!newEl['parameter'].hasOwnProperty('fields'))
-                            newEl['parameter']['fields'] = {};
-                        if (!newEl['parameter']['fields'].hasOwnProperty(key.capitalizeFirstLetter()))
-                            newEl['parameter']['fields'][key.capitalizeFirstLetter()] = [];
-                        newEl['parameter']['fields'][key.capitalizeFirstLetter()].push(
-                            {
-                                group: key.capitalizeFirstLetter(),
-                                type: el[key][p].type.capitalizeFirstLetter(),
-                                optional: !( el[key][p].required || false ),
-                                field: p,
-                                description: el[key][p].description
-
-                            }
-                        )
-                    }
-                }
-                /*
-                var parArray = ['fields','bodyFields'];
-                for (var i = 0; i < parArray.length; ++i) {
-                    var key = parArray[i];
-                    var exKey = key+"Examples";
-
-                    for (var p in el[exKey]) {
-                        if (!newEl['parameter'].hasOwnProperty('examples'))
-                            newEl['parameter']['examples'] = {};
-                        if (!newEl['parameter']['examples'].hasOwnProperty(key.capitalizeFirstLetter()))
-                            newEl['parameter']['examples'][key.capitalizeFirstLetter()] = [];
-                        newEl['parameter']['examples'][key.capitalizeFirstLetter()].push(
-                            {
-                                title: el[exKey].capitalizeFirstLetter(),
-                                type: el[exKey][p].type.capitalizeFirstLetter(),
-                                content: el[key][p].description
-
-                            }
-                        )
-                    }
-                } */
-
-
-                var key = 'params';
-                for (var p in el[key]) {
-                    if (!newEl['parameter'].hasOwnProperty('fields'))
-                        newEl['parameter']['fields'] = {};
-                    if (!newEl['parameter']['fields'].hasOwnProperty('Parameters'))
-                        newEl['parameter']['fields']['Parameters'] = [];
-                    newEl['parameter']['fields']['Parameters'].push(
+                    var parArray = [
                         {
-                            group: 'Parameters',
-                            type: el[key][p].type.capitalizeFirstLetter(),
-                            optional: !( el[key][p].required || false ),
-                            field: p,
-                            description: el[key][p].description
-
-                        }
-                    )
-                }
-                delete newEl[key];
-                delete newEl[key];
-
-
-                for (var p in el['headers']) {
-                    if (!newEl.hasOwnProperty('header'))
-                        newEl['header'] = {};
-                    if (!newEl['header'].hasOwnProperty('fields'))
-                        newEl['header']['fields'] = {};
-                    if (!newEl['header']['fields'].hasOwnProperty('Headers'))
-                        newEl['header']['fields']['Headers'] = [];
-                    newEl['header']['fields']['Headers'].push(
+                            field: 'fields',
+                            container: 'parameter'
+                        },
                         {
-                            group: 'Headers',
-                            type: el['headers'][p].type.capitalizeFirstLetter(),
-                            optional: !( el['headers'][p].required || false ),
-                            field: p,
-                            description: el['headers'][p].description
-
+                            field: 'params',
+                            container: 'parameter',
+                            showAs: 'Parameters'
+                        },
+                        {
+                            field: 'bodyFields',
+                            container: 'parameter'
+                        }, {
+                            field: 'Success 200',
+                            container: 'success',
+                            omitRequired: true
+                        },
+                        {
+                            field: 'Success 201',
+                            container: 'success',
+                            omitRequired: true
+                        },
+                        {
+                            field: 'Success 204',
+                            container: 'success',
+                            omitRequired: true
+                        },
+                        {
+                            field: 'Error 4xx',
+                            container: "error",
+                            omitRequired: true
+                        },
+                        {
+                            field: 'headers',
+                            container: "header",
+                            omitRequired: true
+                        },
+                        {
+                            field: 'errorExamples',
+                            container: "error",
+                            omitRequired: true,
+                            middleField: 'examples',
+                            omitThird: true,
+                            fieldName : 'title'
+                        },
+                        {
+                            field: 'successExamples',
+                            container: "success",
+                            omitRequired: true,
+                            middleField: 'examples',
+                            omitThird: true,
+                            fieldName : 'title'
                         }
-                    )
+                    ];
 
+                    for (var i = 0; i < parArray.length; ++i) {
+                        var key = parArray[i].field;
+                        var container = parArray[i].container;
+                        var omitRequired = parArray[i].omitRequired;
+                        var showAs = parArray[i].showAs || key.capitalizeFirstLetter();
+                        var middleField = parArray[i].middleField || 'fields';
+                        var omitThird = parArray[i].omitThird || false;
+                        var fieldName = parArray[i].fieldName || 'field';
+                        if (!newEl[container])
+                            newEl[container] = {};
+
+                        for (var p in el[key]) {
+                            if (!newEl[container].hasOwnProperty(middleField))
+                                newEl[container][middleField] = {};
+                            var toFill;
+                            if (omitThird) {
+                                if (!_.isArray(newEl[container][middleField]))
+                                    newEl[container][middleField] = [];
+                                toFill = newEl[container][middleField];
+                            } else {
+                                if (!newEl[container][middleField].hasOwnProperty(showAs))
+                                    newEl[container][middleField][showAs] = [];
+                                toFill = newEl[container][middleField][showAs];
+                            }
+                            var obj = {
+                                group: showAs,
+                                description:'<p>'+ el[key][p].description +'</p>'
+
+                            };
+                            if (el[key][p].content)
+                                obj['content'] = el[key][p].content;
+                            obj[fieldName] = p;
+
+                            if (el[key][p].type) {
+                                obj.type = el[key][p].type.capitalizeFirstLetter();
+                            }
+                            if (!omitRequired)
+                                obj.optional = !( el[key][p].required || false );
+
+                            toFill.push(obj);
+                        }
+                    }
+
+
+                    var akey = [];
+
+                    /*  for (p in el[akey]) {
+                     if (!newEl['parameter'].hasOwnProperty('fields'))
+                     newEl['parameter']['fields'] = {};
+                     if (!newEl['parameter']['fields'].hasOwnProperty('Parameters'))
+                     newEl['parameter']['fields']['Parameters'] = [];
+                     newEl['parameter']['fields']['Parameters'].push({
+                     group: 'Parameters',
+                     type: el[akey][p].type.capitalizeFirstLetter(),
+                     optional: !( el[akey][p].required || false ),
+                     field: p,
+                     description: el[akey][p].description
+
+                     }
+                     );
+                     } */
+
+
+                    debug(newEl);
+                    api_data.api.push(newEl);
                 }
-
-                api_data.api.push(newEl);
-            });
+            );
 
 
             var apidataFile = path.join(filesLocation, '/api_data.js');
             fs.writeFile(apidataFile, 'define(' + JSON.stringify(api_data) + ');', function (err) {
                 if (err) {
-                    return console.log(err);
+                    debug(err);
+                    callback(err);
+                    return;
                 }
                 debug("written " + apidataFile);
             });
 
 
-        });
+            if (callback instanceof Function) callback(null);
+        }); //end done of async.eachSeries
         app.use(config['docspath'], express.static(filesLocation));
     } // end apidocs
 
@@ -496,7 +577,7 @@ var au = {
 
 String.prototype.capitalizeFirstLetter = function () {
     return this.charAt(0).toUpperCase() + this.slice(1);
-}
+};
 
 
 module.exports = au;
