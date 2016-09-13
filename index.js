@@ -11,7 +11,8 @@ var _ = require('underscore')._;
 var au = {
     doku: function (config) {
         "use strict";
-        return function (config, req, res, next) {
+        return this['fast'] ?  (req, res, next) => this['fast'](config, req, res, next) :
+        (req, res, next) => (this['fast'] = function (config, req, res, next) {
 
 
             debug('audoku');
@@ -224,7 +225,7 @@ var au = {
 
             return res.send(report);
 
-        }.bind(null, config);
+        })(config, req, res, next);
 
     },
     checkValidity: function (rule, item) {
@@ -376,18 +377,24 @@ var au = {
 
         async.eachSeries(calls, function (call, cb) {
             request(call, function (err, help) {
-                if (err) {
+                if (help.statusCode !== 200) {
                     debug(err);
-                    cb(err);
+                    cb();
+                }
+                else if (err) {
+                    debug(err);
+
+                    cb();
                 }
                 else {
-                    debug(help.body);
+                    // debug(help.body);
                     try {
                         apilist.push(JSON.parse(help.body));
                         debug('Collected documentation for call ' + call.url);
-                        cb(null);
+                        cb();
                     } catch (e) {
                         debug(e);
+                        cb();
                     }
                 }
             });
@@ -476,7 +483,7 @@ var au = {
                             omitRequired: true,
                             middleField: 'examples',
                             omitThird: true,
-                            fieldName : 'title'
+                            fieldName: 'title'
                         },
                         {
                             field: 'successExamples',
@@ -484,7 +491,7 @@ var au = {
                             omitRequired: true,
                             middleField: 'examples',
                             omitThird: true,
-                            fieldName : 'title'
+                            fieldName: 'title'
                         }
                     ];
 
@@ -514,7 +521,7 @@ var au = {
                             }
                             var obj = {
                                 group: showAs,
-                                description:'<p>'+ el[key][p].description +'</p>'
+                                description: '<p>' + el[key][p].description + '</p>'
 
                             };
                             if (el[key][p].content)

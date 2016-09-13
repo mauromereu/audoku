@@ -220,15 +220,15 @@ au.apidocs({
         "version": "0.3.0",
         "description": "Api Node/Express documented with audoku and apidoc",
         "title": "Example API",
-        //       "url": "http://api.sample.ee",
-        /*    "header": {
-         "title": "API Overview",
-         "content": "<p>A wonderful set of APIs</p>"
-         },
-         "footer": {
-         "title": "Maintained by ACME",
-         "content": "<p>Codebase maintained by ACME</p>\n"
-         }*/
+        "url": "http://api.sample.ee",
+        "header": {
+            "title": "API Overview",
+            "content": "<p>A wonderful set of APIs</p>"
+        },
+        "footer": {
+            "title": "Maintained by ACME",
+            "content": "<p>Codebase maintained by ACME</p>\n"
+        }
     },
     app: app,
     docspath: '/docs',
